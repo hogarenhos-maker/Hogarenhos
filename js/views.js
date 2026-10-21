@@ -107,20 +107,22 @@ async function viewHome() {
  <div class="container hero-grid">
  <div>
  <p class="eyebrow">Sello artístico · Productora musical y audiovisual</p>
- <h1>Un <em>hogar virtual</em> donde el arte se comparte y se sostiene.</h1>
- <p class="lead">HOGAREÑOS conecta personas a través de la música y el arte. Grabamos en estudio, registramos canciones en hogares y conciertos, damos espacio a ilustradores y tejemos una red independiente que crece de forma colectiva.</p>
+ <h1>Un <em>hogar</em> donde el arte se comparte y se sostiene en comunidad.</h1>
+ <p class="lead">Hogareños conecta personas a través de la música y el arte. Grabamos en estudio, registramos audiovisuales en vivo, damos espacio a ilustradores y tejemos una red independiente que crece de forma colectiva.</p>
  <div class="hero-actions">
  <a class="btn btn-primary" href="#/audiovisuales" data-link>Explorar audiovisuales</a>
- <a class="btn btn-ghost" href="#/artistas" data-link>Sumar mi video presentación</a>
+ <a class="btn btn-ghost" href="#/artistas" data-link>Conocé a los artistas</a>
  </div>
  <div class="hero-stats">
- <div class="hero-stat"> <strong>60+</strong> <span>Obras publicadas</span> </div>
+ <div class="hero-stat"> <strong>+60</strong> <span>Obras publicadas</span> </div>
  <div class="hero-stat"> <strong>4</strong> <span>Formatos audiovisuales</span> </div>
  <div class="hero-stat"> <strong>1</strong> <span>Red, muchas voces</span> </div>
  </div>
  </div>
  <div class="hero-art" aria-hidden="true">
-${homeIllustration()}
+${homeIllustration(function homeIllustration() {
+  return `<img src="img/hogarenhos-web.png" alt="Ilustración del hogar Hogareños" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);">`;
+})}
  <span class="hero-badge"> <span class="pulse-dot"></span> Proyecto activo: ${esc(proyecto ? proyecto.nombre : "Voces del hogar")}</span>
  </div>
  </div>
