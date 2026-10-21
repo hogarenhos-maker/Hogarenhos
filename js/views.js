@@ -68,7 +68,7 @@ function contentCard(item, opts = {}) {
   const ytId = getYouTubeId(link);
 
   const meta = [];
-  if (item.anio) meta.push(`<span>📅 ${esc(item.anio)}</span>`);
+  if (item.fecha) meta.push(`<span>📅 ${esc(item.fecha)}</span>`);
   if (item.duracion) meta.push(`<span>⏱ ${esc(item.duracion)}</span>`);
   if (item.ubicacion) meta.push(`<span>📍 ${esc(item.ubicacion)}</span>`);
 
@@ -76,9 +76,8 @@ function contentCard(item, opts = {}) {
     ? `<div class="card-thumb" style="background:#000; padding:0;"> <iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/${ytId}" title="${esc(titulo)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="aspect-ratio:16/10; width:100%; height:100%;"></iframe> </div>`
     : `<div class="card-thumb" style="background:${gradient(hue)}"> <span class="card-art" aria-hidden="true">${esc(initials(titulo))}</span> ${link ? `<div class="play-badge" aria-hidden="true"> <span class="play-circle">${playIcon()}</span> </div>` : ""} </div>`;
 
-  const body = `<article class="card"> ${mediaContent} <div class="card-body"> ${tag ? `<span class="tag">${esc(tag)}</span>` : ""} <h3>${esc(titulo)}</h3> ${sub ? `<span class="card-artist">${esc(sub)}</span>` : ""} ${desc ? `<p>${esc(desc)}</p>` : ""} ${meta.length ? `<div class="card-meta">${meta.join(" ")}</div>` : ""} </div> </article>`;
-
-  return !ytId && link
+const body = `<article class="card" data-fecha="${item.fecha || 0}" data-titulo="${esc(titulo)}"> ${mediaContent} <div class="card-body"> ${tag ? `<span class="tag">${esc(tag)}</span>` : ""} <h3>${esc(titulo)}</h3> ${sub ? `<span class="card-artist">${esc(sub)}</span>` : ""} ${desc ? `<p>${esc(desc)}</p>` : ""} ${meta.length ? `<div class="card-meta">${meta.join(" ")}</div>` : ""} </div> </article>`; 
+    return !ytId && link
     ? `<a href="${esc(link)}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:contents;" aria-label="${esc(titulo)} — abrir en YouTube">${body}</a>`
     : body;
 }
@@ -98,7 +97,7 @@ async function viewHome() {
  <h1>Un <em>hogar</em> donde el arte se comparte y se sostiene en comunidad.</h1>
  <p class="lead">Hogareños conecta personas a través de la música y el arte. Grabamos en estudio, registramos audiovisuales en vivo, damos espacio a ilustradores y tejemos una red independiente que crece de forma colectiva.</p>
  <div class="hero-actions">
- <a class="btn btn-primary" href="#/audiovisuales" data-link>Explorar audiovisuales</a>
+ <a class="btn btn-primary" href="#/productora" data-link>Quiero producir con Hogareños</a>
  <a class="btn btn-ghost" href="#/artistas" data-link>Conocé a los artistas</a>
  </div>
  <div class="hero-stats">
@@ -191,8 +190,35 @@ function projectSummary(p, pct) {
 }
 
 /** Ilustración del hogar (imagen real). */
+/** Mapa de navegación del hogar (6 secciones con iconos). */
 function homeIllustration() {
-  return `<img src="img/hogarenhos-web.png" alt="Ilustración del hogar Hogareños" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);">`;
+  return `
+  <nav class="hero-nav" aria-label="Secciones del hogar">
+    <a href="#/estudio" data-link class="hero-nav-item">
+      <img src="img/icon-estudio.png" alt="Grabaciones en estudio" loading="lazy">
+      <span class="hero-nav-label">| EN ESTUDIO |</span>
+    </a>
+    <a href="#/audiovisuales" data-link class="hero-nav-item">
+      <img src="img/icon-hogares.png" alt="Hogares" loading="lazy">
+      <span class="hero-nav-label">| EN HOGARES |</span>
+    </a>
+    <a href="#/audiovisuales" data-link class="hero-nav-item">
+      <img src="img/icon-concierto.png" alt="Concierto" loading="lazy">
+      <span class="hero-nav-label">| EN CONCIERTO |</span>
+    </a>
+    <a href="#/audiovisuales" data-link class="hero-nav-item">
+      <img src="img/icon-sesiones.png" alt="Sesiones" loading="lazy">
+      <span class="hero-nav-label">| EN SESIONES |</span>
+    </a>
+    <a href="#/audiovisuales" data-link class="hero-nav-item">
+      <img src="img/icon-locales.png" alt="Locales" loading="lazy">
+      <span class="hero-nav-label">| EN LOCALES |</span>
+    </a>
+    <a href="#/ilustradores" data-link class="hero-nav-item">
+      <img src="img/icon-ilustradores.png" alt="Ilustradores" loading="lazy">
+      <span class="hero-nav-label">| ILUSTRADORES |</span>
+    </a>
+  </nav>`;
 }
 
 /* ==========================================================================
@@ -259,11 +285,20 @@ ${sectionHead("Audiovisuales", "En vivo", "Cuatro formatos para registrar, inter
  <button class="chip" data-av="LOCALES">LOCALES</button>
  <button class="chip" data-av="SESIONES">SESIONES</button>
  </div>
- <div class="section-cards" style="margin-bottom:2.5rem;">
+ <div class="sort-controls">
+   <label for="av-sort">Ordenar por:</label>
+   <select id="av-sort">
+     <option value="recent">Más recientes</option>
+     <option value="old">Más antiguos</option>
+     <option value="alpha-asc">A-Z</option>
+     <option value="alpha-desc">Z-A</option>
+   </select>
+ </div>
+ <div class="section-cards" id="av-explanations">
 ${avFormatCard("HOGARES", "🏡", "<strong>Una canción</strong> en el corazón de un hogar.")}
-${avFormatCard("CONCIERTO", "🎤", "<strong>Una canción</strong> realizada en un concierto o con espectadores.")}
+${avFormatCard("CONCIERTO", "", "<strong>Una canción</strong> realizada en un concierto o con espectadores.")}
 ${avFormatCard("LOCALES", "☕", "<strong>Dos audiovisuales</strong>, compartiendo promoción junto a un local.")}
-${avFormatCard("SESIONES", "", "<strong>Tres canciones</strong> reunidas en un mismo audiovisual.")}
+${avFormatCard("SESIONES", "🎶", "<strong>Tres canciones</strong> reunidas en un mismo audiovisual.")}
  </div>
  <div class="grid grid-wide" id="av-grid">
 ${rows.map((r) => contentCard(r)).join("")}
@@ -274,29 +309,135 @@ ${rows.map((r) => contentCard(r)).join("")}
 }
 
 function avFormatCard(cat, icon, desc) {
-  return `<article class="home-card" style="cursor:default;"> <span class="card-icon" aria-hidden="true">${icon}</span> <h3>${cat}</h3> <p>${desc}</p> </article>`;
+  return `<article class="home-card av-filter-card" data-filter="${cat}" style="cursor:pointer;" role="button" tabindex="0" aria-label="Filtrar por ${cat}"> 
+    <span class="card-icon" aria-hidden="true">${icon}</span> 
+    <h3>${cat}</h3> 
+    <p>${desc}</p> 
+  </article>`;
 }
 
 function bindAudiovisualGrid() {
   const grid = document.getElementById("av-grid");
   const empty = document.getElementById("av-empty");
+  const explanations = document.getElementById("av-explanations");
+  const sortSelect = document.getElementById("av-sort");
   if (!grid) return;
+
+  let filtroActivo = "all";
+
+  function ordenarItems(items, criterio) {
+    const arr = Array.from(items);
+    switch (criterio) {
+      case "recent":
+        return arr.sort((a, b) => {
+          const aFecha = new Date(a.dataset.fecha || '1900-01-01');
+          const bFecha = new Date(b.dataset.fecha || '1900-01-01');
+          return bFecha - aFecha;
+        });
+      case "old":
+        return arr.sort((a, b) => {
+          const aFecha = new Date(a.dataset.fecha || '1900-01-01');
+          const bFecha = new Date(b.dataset.fecha || '1900-01-01');
+          return aFecha - bFecha;
+        });
+      case "alpha-asc":
+        return arr.sort((a, b) => {
+          const aTitulo = a.dataset.titulo || "";
+          const bTitulo = b.dataset.titulo || "";
+          return aTitulo.localeCompare(bTitulo, "es");
+        });
+      case "alpha-desc":
+        return arr.sort((a, b) => {
+          const aTitulo = a.dataset.titulo || "";
+          const bTitulo = b.dataset.titulo || "";
+          return bTitulo.localeCompare(aTitulo, "es");
+        });
+      default:
+        return arr;
+    }
+  }
+
+  function aplicarFiltroYOrden() {
+    const criterio = sortSelect ? sortSelect.value : "recent";
+    const todos = Array.from(grid.children);
+    let visibles = 0;
+
+    const ordenados = ordenarItems(todos, criterio);
+
+    grid.innerHTML = "";
+    ordenados.forEach((el) => {
+      const card = el.matches("article") ? el : el.querySelector(".card");
+      const cat = card ? (card.querySelector(".tag")?.textContent || "").trim() : "";
+      const match = filtroActivo === "all" || cat === filtroActivo;
+      el.style.display = match ? "" : "none";
+      if (match) visibles++;
+      grid.appendChild(el);
+    });
+
+    if (empty) empty.style.display = visibles ? "none" : "block";
+  }
+
+  // Función para actualizar el estado visual de los cuadros
+  function actualizarCuadrosActivos() {
+    if (!explanations) return;
+    explanations.querySelectorAll(".av-filter-card").forEach((card) => {
+      if (card.dataset.filter === filtroActivo) {
+        card.classList.add("active");
+      } else {
+        card.classList.remove("active");
+      }
+    });
+  }
+
+  // Event listeners para los chips de filtro (mantener como alternativa)
   document.querySelectorAll(".chip[data-av]").forEach((chip) => {
     chip.addEventListener("click", () => {
       document.querySelectorAll(".chip[data-av]").forEach((c) => c.classList.remove("active"));
       chip.classList.add("active");
-      const f = chip.dataset.av;
-      let visibles = 0;
-      grid.querySelectorAll("a, article").forEach((el) => {
-        const card = el.matches("article") ? el : el.querySelector(".card");
-        const cat = card ? (card.querySelector(".tag")?.textContent || "") : "";
-        const match = f === "all" || cat.trim() === f;
-        el.style.display = match ? "" : "none";
-        if (match) visibles++;
-      });
-      if (empty) empty.style.display = visibles ? "none" : "block";
+      filtroActivo = chip.dataset.av;
+      actualizarCuadrosActivos();
+      aplicarFiltroYOrden();
     });
   });
+
+  // Event listeners para los cuadros clickeables
+  if (explanations) {
+    explanations.querySelectorAll(".av-filter-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const filtro = card.dataset.filter;
+        filtroActivo = filtro;
+        
+        // Actualizar chips
+        document.querySelectorAll(".chip[data-av]").forEach((c) => {
+          c.classList.remove("active");
+          if (c.dataset.av === filtro) c.classList.add("active");
+        });
+        
+        actualizarCuadrosActivos();
+        aplicarFiltroYOrden();
+        
+        // Scroll suave hacia los videos
+        grid.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      
+      // Soporte para teclado
+      card.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          card.click();
+        }
+      });
+    });
+  }
+
+  // Event listener para el selector de orden
+  if (sortSelect) {
+    sortSelect.addEventListener("change", aplicarFiltroYOrden);
+  }
+
+  // Inicializar
+  actualizarCuadrosActivos();
+  aplicarFiltroYOrden();
 }
 
 /* ==========================================================================
